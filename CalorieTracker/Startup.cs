@@ -3,6 +3,7 @@ using CalorieTracker.Data;
 using CalorieTracker.Extensions;
 using CalorieTracker.Mappings;
 using CalorieTracker.Models;
+using CalorieTracker.Validators;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -26,7 +27,11 @@ namespace CalorieTracker
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<DbContext>(); 
-            services.AddIdentity<AppUser, AppRole>().AddEntityFrameworkStores<DbContext>();
+            services.AddIdentity<AppUser, AppRole>(_ => {
+                _.Password.RequireNonAlphanumeric = false;
+            }).AddPasswordValidator<CustomPasswordValidator>()
+                .AddUserValidator<CustomUserValidator>()
+                .AddEntityFrameworkStores<DbContext>();
             
             services.AddControllers();
 

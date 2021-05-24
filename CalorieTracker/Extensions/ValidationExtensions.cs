@@ -7,10 +7,9 @@ namespace CalorieTracker.Extensions
 {
     public static class ValidationExtensions
     {
-        public static IServiceCollection AddValidationServices(this IServiceCollection services)
+        public static void AddValidationServices(this IServiceCollection services)
         {
             services.AddTransient<IValidator<RegisterUserRequest>, RegisterUserValidator>();
-            return services;
         }
     }
 }

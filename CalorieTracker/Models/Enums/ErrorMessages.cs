@@ -13,6 +13,9 @@ namespace CalorieTracker.Models.Enums
         
         [Display(Description = "Email has already been taken")]
         UserNameIsAlreadyTaken,
+        
+        [Display(Description = "User name cannot start with digits")]
+        UserNameCannotStartWithDigit,
 
         [Display(Description = "Email address cannot be empty")]
         EmailCannotBeEmpty,
@@ -34,6 +37,12 @@ namespace CalorieTracker.Models.Enums
 
         [Display(Description = "Passwords should match")]
         PasswordsShouldMatch,
+        
+        [Display(Description = "Password length must be at least {0}")]        
+        PasswordLengthMustBeAtLeastX,
+        
+        [Display(Description = "Password should not contain username")]        
+        PasswordShouldNotContainUserName,
         
         [Display(Description = "Phone number cannot be empty")]
         PhoneNumberCannotBeEmpty
