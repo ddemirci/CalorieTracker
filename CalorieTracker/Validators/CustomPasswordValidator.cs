@@ -13,7 +13,7 @@ namespace CalorieTracker.Validators
         public Task<IdentityResult> ValidateAsync(UserManager<AppUser> manager, AppUser user, string password)
         {
             var errorList = new List<IdentityError>();
-            const int charLimit = 6;
+            const int charLimit = Constants.MinimumRequiredPasswordLength;
 
             if(password.Length < charLimit)
                 errorList.Add(new IdentityError

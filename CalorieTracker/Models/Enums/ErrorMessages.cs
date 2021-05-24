@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace CalorieTracker.Models.Enums
 {
@@ -45,6 +44,24 @@ namespace CalorieTracker.Models.Enums
         PasswordShouldNotContainUserName,
         
         [Display(Description = "Phone number cannot be empty")]
-        PhoneNumberCannotBeEmpty
+        PhoneNumberCannotBeEmpty,
+        
+        [Display(Description = "Role name cannot be empty")]        
+        RoleNameCannotBeEmpty,
+        
+        [Display(Description = "Specified role could not be found")]        
+        RoleNotFound,
+        
+        [Display(Description = "Specified role has already been created")]        
+        RoleAlreadyCreated,
+
+        [Display(Description = "You entered a wrong password.")]
+        WrongPassword,
+        
+        [Display(Description = "You have entered wrong username/email or password")]
+        LoginInformationWrong,
+
+        [Display(Description = "Your account is suspended until {0}")]
+        AccountSuspendedUntilX,
     }
 }

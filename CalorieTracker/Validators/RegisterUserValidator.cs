@@ -14,8 +14,8 @@ namespace CalorieTracker.Validators
 
         public RegisterUserValidator(UserManager<AppUser> userManager)
         {
-            const int minLengthForUserName = 4;
-            const int maxLengthForUserName = 15;
+            const int minLengthForUserName = Constants.MinimumRequiredUsernameLength;
+            const int maxLengthForUserName = Constants.MaximumRequiredUsernameLength;
             _userManager = userManager;
             
             RuleFor(u => u.Email)

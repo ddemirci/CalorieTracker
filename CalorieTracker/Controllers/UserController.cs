@@ -1,6 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using AutoMapper;
+using CalorieTracker.Helpers;
 using CalorieTracker.Models;
+using CalorieTracker.Models.Enums;
 using CalorieTracker.Models.Requests;
 using CalorieTracker.Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
@@ -13,12 +16,15 @@ namespace CalorieTracker.Controllers
     public class UserController : BaseController
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly SignInManager<AppUser> _signInManager;
         private readonly IMapper _mapper;
 
         public UserController(UserManager<AppUser> userManager,
+            SignInManager<AppUser> signInManager,
             IMapper mapper)
         {
             _userManager = userManager;
+            _signInManager = signInManager;
             _mapper = mapper;
         }
 
@@ -35,11 +41,68 @@ namespace CalorieTracker.Controllers
                 return BadRequest(requestValidation.ErrorMessage);
 
             var newUser = _mapper.Map<RegisterUserRequest, AppUser>(request);
-            var registerResult = await _userManager.CreateAsync(newUser, request.Password);
-            return !registerResult.Succeeded
-                ? BadRequest(registerResult.Errors)
+            var result = await _userManager.CreateAsync(newUser, request.Password);
+
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
+            //Adding member role to registered user.
+            result = await _userManager.AddToRoleAsync(newUser, "Member");
+            return !result.Succeeded
+                ? BadRequest(result.Errors)
                 : Created($"User with username {newUser.UserName} and email address {newUser.Email} has been registered successfully", 
                     _mapper.Map<AppUser, UserViewModel>(newUser));
+        }
+
+        /// <summary>
+        /// User logins
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login([FromBody] LoginUserRequest request)
+        {
+            var requestValidation = ValidateRequest(ModelState);
+            if (requestValidation != null)
+                return BadRequest(requestValidation.ErrorMessage);
+
+            var user = await _userManager.FindByNameAsync(request.Username) ?? await _userManager.FindByEmailAsync(request.Username);
+            if (user == null)
+                return BadRequest(ErrorMessages.LoginInformationWrong.GetDisplayDescription());                
+
+            var loginResult = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
+            if (loginResult.Succeeded)
+            {
+                await _userManager.ResetAccessFailedCountAsync(user);
+                return Ok("Logged in. JWT Token will be given soon"); //TODO: JWT Token will be generated.
+            }
+
+            if (loginResult.IsLockedOut)
+                return BadRequest(string.Format(ErrorMessages.AccountSuspendedUntilX.GetDisplayDescription(),
+                    user.LockoutEnd?.ToString("dd MMMM yyyy, h:mm:ss tt")));
+
+            await _userManager.AccessFailedAsync(user);
+            return BadRequest(ErrorMessages.LoginInformationWrong.GetDisplayDescription());
+        }
+
+        /// <summary>
+        /// User updates his/her password
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPut("Password")]
+        public async Task<IActionResult> UpdatePassword(UpdatePasswordRequest request)
+        {
+            var user = await _userManager.FindByNameAsync(User.Identity?.Name);
+            if (user == null)
+                BadRequest("Error");
+
+            if (!await _userManager.CheckPasswordAsync(user, request.OldPassword))
+                BadRequest(ErrorMessages.WrongPassword.GetDisplayDescription());
+
+            var result = await _userManager.ChangePasswordAsync(user, request.OldPassword, request.NewPassword);
+            return !result.Succeeded
+                ? BadRequest(result.Errors)
+                : Ok("Password changed successfully");
         }
     }
 }
