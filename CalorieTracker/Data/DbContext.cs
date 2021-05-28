@@ -12,6 +12,9 @@ namespace CalorieTracker.Data
         IdentityRoleClaim<string>, IdentityUserToken<string>>
     {
         private readonly IConfiguration _configuration;
+        public virtual DbSet<UserInformation> UserInformation { get; set; }
+        public virtual DbSet<Meal> Meals { get; set; }
+        public virtual DbSet<MealFood> MealFoods { get; set; }
         
         public DbContext(DbContextOptions<DbContext> options,
             IConfiguration configuration) : base(options)
@@ -50,6 +53,35 @@ namespace CalorieTracker.Data
                     .WithMany(r => r.UserRoles)
                     .HasForeignKey(ur => ur.UserId)
                     .IsRequired();
+            });
+
+            modelBuilder.Entity<Meal>(mealEntity =>
+            {
+                mealEntity.HasOne(meal => meal.User)
+                    .WithMany(user => user.Meals)
+                    .HasForeignKey(meal => meal.UserId);
+            });
+
+            modelBuilder.Entity<MealFood>(mealFoodEntity =>
+            {
+                mealFoodEntity.HasOne(mealFood => mealFood.Meal)
+                    .WithMany(meal => meal.MealFoods)
+                    .HasForeignKey(mealFood => mealFood.MealId);
+                mealFoodEntity.Property(m => m.TotalFat).HasDefaultValue(0);
+                mealFoodEntity.Property(m => m.SaturatedFat).HasDefaultValue(0);
+                mealFoodEntity.Property(m => m.Cholesterol).HasDefaultValue(0);
+                mealFoodEntity.Property(m => m.Sodium).HasDefaultValue(0);
+                mealFoodEntity.Property(m => m.Carbohydrate).HasDefaultValue(0);
+                mealFoodEntity.Property(m => m.DietaryFiber).HasDefaultValue(0);
+                mealFoodEntity.Property(m => m.Sugars).HasDefaultValue(0);
+                mealFoodEntity.Property(m => m.Protein).HasDefaultValue(0);
+                mealFoodEntity.Property(m => m.Potassium).HasDefaultValue(0);
+            });
+            
+            modelBuilder.Entity<UserInformation>(userInformationEntity =>
+            {
+                userInformationEntity.HasOne(userInformation => userInformation.User)
+                    .WithOne(user => user.UserInformation);
             });
         }
     }
