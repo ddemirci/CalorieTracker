@@ -32,6 +32,11 @@ namespace CalorieTracker.Data
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<AppUser>()
+                .Property(user => user.EnrolledAt)
+                .HasDefaultValueSql("NOW()")
+                .ValueGeneratedOnAdd();
+            
             modelBuilder.Entity<AppUserRole>(userRole =>
             {
                 userRole.HasKey(ur => new {ur.UserId, ur.RoleId});
