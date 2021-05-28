@@ -6,6 +6,7 @@ using CalorieTracker.Models;
 using CalorieTracker.Models.Enums;
 using CalorieTracker.Models.Requests;
 using CalorieTracker.Models.ViewModels;
+using CalorieTracker.Services.IServices;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,14 +18,17 @@ namespace CalorieTracker.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
+        private readonly ITokenAuthenticationService _tokenAuthenticationService;
         private readonly IMapper _mapper;
 
         public UserController(UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
+            ITokenAuthenticationService tokenAuthenticationService,
             IMapper mapper)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _tokenAuthenticationService = tokenAuthenticationService;
             _mapper = mapper;
         }
 
@@ -73,7 +77,8 @@ namespace CalorieTracker.Controllers
             if (loginResult.Succeeded)
             {
                 await _userManager.ResetAccessFailedCountAsync(user);
-                return Ok("Logged in. JWT Token will be given soon"); //TODO: JWT Token will be generated.
+                var token = await _tokenAuthenticationService.GenerateJwtTokenAsync(user);
+                return Ok(token);
             }
 
             if (loginResult.IsLockedOut)

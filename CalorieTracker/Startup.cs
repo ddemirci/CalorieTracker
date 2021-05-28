@@ -1,20 +1,13 @@
-using System;
-using System.IO;
 using System.Reflection;
 using CalorieTracker.Data;
 using CalorieTracker.Extensions;
-using CalorieTracker.Helpers;
 using CalorieTracker.Mappings;
-using CalorieTracker.Models;
-using CalorieTracker.Validators;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
 using FluentValidation.AspNetCore;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace CalorieTracker
 {
@@ -31,14 +24,8 @@ namespace CalorieTracker
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<DbContext>(); 
-            services.AddIdentity<AppUser, AppRole>(_ => {
-                _.Password.RequireNonAlphanumeric = false;
-                _.Password.RequireUppercase = false;
-                _.Lockout.MaxFailedAccessAttempts = Constants.AccessFailedCountThreshold;
-                _.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(Constants.AccountLockoutDuration);
-            }).AddPasswordValidator<CustomPasswordValidator>()
-                .AddUserValidator<CustomUserValidator>()
-                .AddEntityFrameworkStores<DbContext>();
+
+            services.AddIdentityServer();
             
             services.AddControllers();
 
@@ -50,15 +37,13 @@ namespace CalorieTracker
                 })
                 .AddFluentValidation();
             
+            services.AddServices();
             services.AddValidationServices();
             services.AddAutoMapper(Assembly.GetAssembly(typeof(IMappingProfile)));
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo {Title = "CalorieTracker", Version = "v1"});
-                // integrate xml comments
-                c.IncludeXmlComments(Path.Combine(PlatformServices.Default.Application.ApplicationBasePath,
-                    Assembly.GetExecutingAssembly().GetName().Name + ".xml"));
-            });
+            services.AddSwagger();
+
+            services.AddAuthenticationServices(Configuration);
+            services.AddAuthorizationServices();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -73,8 +58,9 @@ namespace CalorieTracker
 
             app.UseHttpsRedirection();
             app.UseRouting();
+
             app.UseAuthentication();
-            // app.UseAuthorization();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
