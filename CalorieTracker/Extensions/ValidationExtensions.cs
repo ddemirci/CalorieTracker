@@ -12,7 +12,8 @@ namespace CalorieTracker.Extensions
             services.AddTransient<IValidator<RegisterUserRequest>, RegisterUserValidator>();
             services.AddTransient<IValidator<RoleRequest>, AppRoleValidator>();
             services.AddTransient<IValidator<UpdatePasswordRequest>, UpdatePasswordValidator>();
-            services.AddTransient<IValidator<LoginUserRequest>, LoginUserValidator>();            
+            services.AddTransient<IValidator<LoginUserRequest>, LoginUserValidator>();
+            services.AddTransient<IValidator<UserInformationRequest>, UserInformationValidator>();
         }
     }
 }

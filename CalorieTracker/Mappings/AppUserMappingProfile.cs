@@ -11,6 +11,7 @@ namespace CalorieTracker.Mappings
         {
             CreateMap<RegisterUserRequest, AppUser>();
             CreateMap<AppUser, UserViewModel>();
+            CreateMap<UserInformationRequest, UserInformation>();
         }
     }
 }

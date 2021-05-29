@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
 using AutoMapper;
+using CalorieTracker.Extensions;
 using CalorieTracker.Helpers;
 using CalorieTracker.Models;
 using CalorieTracker.Models.Enums;
 using CalorieTracker.Models.Requests;
 using CalorieTracker.Models.ViewModels;
 using CalorieTracker.Services.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -108,6 +110,26 @@ namespace CalorieTracker.Controllers
             return !result.Succeeded
                 ? BadRequest(result.Errors)
                 : Ok("Password changed successfully");
+        }
+
+        [Authorize(Roles = "Member")]
+        [HttpPost("Information")]
+        public async Task<IActionResult> UserInformation(UserInformationRequest request)
+        {
+            var username = User.GetUserName();
+            if (username == null)
+                return BadRequest("Not authenticated user.");
+
+            var user = await _userManager.FindByNameAsync(username);
+            if (user == null)
+                return BadRequest("User not found");
+
+            user.UserInformation = _mapper.Map<UserInformation>(request);
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+                return BadRequest("Hata");
+            return Ok();
         }
     }
 }

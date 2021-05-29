@@ -32,6 +32,7 @@ namespace CalorieTracker.Services
             var claims = new List<Claim>()
             {
                 new(JwtRegisteredClaimNames.NameId, user.Id),
+                new(JwtRegisteredClaimNames.UniqueName, user.UserName),
                 new(JwtRegisteredClaimNames.Sub, user.UserName),
                 new(JwtRegisteredClaimNames.Email, user.Email),
                 new(JwtRegisteredClaimNames.Iss, _configuration["JwtTokenIssuer"]),

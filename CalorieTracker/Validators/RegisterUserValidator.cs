@@ -45,8 +45,7 @@ namespace CalorieTracker.Validators
 
             RuleFor(request => request.PhoneNumber)
                 .NotEmpty().WithMessage(ErrorMessages.PhoneNumberCannotBeEmpty.GetDisplayDescription());
-
-            RuleFor(request => request.Gender).IsInEnum();
+           
         }
 
         private async Task<bool> EmailNotExists(string email) => await _userManager.FindByEmailAsync(email) == null;

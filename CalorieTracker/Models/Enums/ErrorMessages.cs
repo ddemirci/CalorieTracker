@@ -63,5 +63,23 @@ namespace CalorieTracker.Models.Enums
 
         [Display(Description = "Your account is suspended until {0}")]
         AccountSuspendedUntilX,
+
+        [Display(Description = "Please enter a valid height")]
+        HeightIsNotValid,
+
+        [Display(Description = "Please enter a valid weight")]
+        WeightIsNotValid,
+        
+        [Display(Description = "Please enter a valid gender")]
+        GenderIsNotValid,
+        
+        [Display(Description = "Please enter a valid min calories amount")]
+        MinCaloriesIsNotValid,
+        
+        [Display(Description = "Please enter a valid max calories amount")]
+        MaxCaloriesIsNotValid,
+        
+        [Display(Description = "Please enter a valid birth date")]
+        DateOfBirthIsNotValid,
     }
 }

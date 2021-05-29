@@ -12,6 +12,5 @@ namespace CalorieTracker.Models.Requests
         public string Password { get; set; }
         public string PasswordConfirmation { get; set; }
         public string PhoneNumber { get; set; }
-        public Gender Gender { get; set; }
     }
 }
