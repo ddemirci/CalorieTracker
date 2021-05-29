@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Ardalis.GuardClauses;
 using AutoMapper;
 using CalorieTracker.Extensions;
 using CalorieTracker.Helpers;
@@ -21,16 +22,19 @@ namespace CalorieTracker.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly ITokenAuthenticationService _tokenAuthenticationService;
+        private readonly IAccountService _accountService;
         private readonly IMapper _mapper;
 
         public UserController(UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
             ITokenAuthenticationService tokenAuthenticationService,
+            IAccountService accountService,
             IMapper mapper)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenAuthenticationService = tokenAuthenticationService;
+            _accountService = accountService;
             _mapper = mapper;
         }
 
@@ -99,9 +103,9 @@ namespace CalorieTracker.Controllers
         [HttpPut("Password")]
         public async Task<IActionResult> UpdatePassword(UpdatePasswordRequest request)
         {
-            var user = await _userManager.FindByNameAsync(User.Identity?.Name);
+            var user = await GetUser();
             if (user == null)
-                BadRequest("Error");
+                return BadRequest(ErrorMessages.UserNotFound.GetDisplayDescription());
 
             if (!await _userManager.CheckPasswordAsync(user, request.OldPassword))
                 BadRequest(ErrorMessages.WrongPassword.GetDisplayDescription());
@@ -112,24 +116,87 @@ namespace CalorieTracker.Controllers
                 : Ok("Password changed successfully");
         }
 
+        /// <summary>
+        /// User add information to his/her account
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         [Authorize(Roles = "Member")]
         [HttpPost("Information")]
         public async Task<IActionResult> UserInformation(UserInformationRequest request)
         {
-            var username = User.GetUserName();
-            if (username == null)
-                return BadRequest("Not authenticated user.");
-
-            var user = await _userManager.FindByNameAsync(username);
+            var user = await GetUser();
             if (user == null)
-                return BadRequest("User not found");
+                return BadRequest(ErrorMessages.UserNotFound.GetDisplayDescription());
 
             user.UserInformation = _mapper.Map<UserInformation>(request);
 
             var result = await _userManager.UpdateAsync(user);
-            if (!result.Succeeded)
-                return BadRequest("Hata");
-            return Ok();
+            return result.Succeeded ? Ok()
+                : BadRequest(ErrorMessages.GeneralError.GetDisplayDescription());
         }
+
+        /// <summary>
+        /// User updates his/her weight
+        /// </summary>
+        /// <param name="weight"></param>
+        /// <returns></returns>
+        [Authorize(Roles = "Member")]
+        [HttpPut("Information/Weight")]
+        public async Task<IActionResult> UpdateWeight([FromQuery] decimal weight)
+        {
+            Guard.Against.NegativeOrZero(weight, nameof(weight));
+            var user = await GetUser();
+            if (user == null)
+                return BadRequest(ErrorMessages.UserNotFound.GetDisplayDescription());
+
+            if (user.UserInformation == null)
+                return BadRequest(ErrorMessages.UserInformationIsNull.GetDisplayDescription());
+
+            user.UserInformation.Weight = weight;
+            return await UpdateUser(user);
+        }
+        
+        /// <summary>
+        /// User updates his/her height
+        /// </summary>
+        /// <param name="height"></param>
+        /// <returns></returns>
+        [Authorize(Roles = "Member")]
+        [HttpPut("Information/Height")]
+        public async Task<IActionResult> UpdateHeight([FromQuery] int height)
+        {
+            Guard.Against.NegativeOrZero(height, nameof(height));
+            var user = await GetUser();
+            if (user == null)
+                return BadRequest(ErrorMessages.UserNotFound.GetDisplayDescription());
+
+            if (user.UserInformation == null)
+                return BadRequest(ErrorMessages.UserInformationIsNull.GetDisplayDescription());
+
+            user.UserInformation.Height = height;
+            return await UpdateUser(user);
+        }
+
+        #region Helper Methods
+
+        private async Task<AppUser> GetUser()
+        {
+            var username = User.GetUserName();
+            if (username == null)
+                return null;
+            var user = await _accountService.GetUserByUserName(username);
+            return user;
+        }
+
+        private async Task<IActionResult> UpdateUser(AppUser user)
+        {
+            user.ModifiedAt = DateTimeOffset.Now;
+            var result = await _accountService.SaveAllAsync();
+            return result ? Ok() 
+                : BadRequest(ErrorMessages.GeneralError.GetDisplayDescription());
+        }
+        
+        #endregion
     }
 }

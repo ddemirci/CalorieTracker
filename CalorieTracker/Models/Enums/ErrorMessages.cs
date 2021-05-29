@@ -81,5 +81,14 @@ namespace CalorieTracker.Models.Enums
         
         [Display(Description = "Please enter a valid birth date")]
         DateOfBirthIsNotValid,
+        
+        [Display(Description = "User not found")]        
+        UserNotFound,
+
+        [Display(Description = "Error. Please try again later")]
+        GeneralError,
+
+        [Display(Description = "User details are not existed")]
+        UserInformationIsNull
     }
 }

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace CalorieTracker.Data
 {
-    public class DbContext : IdentityDbContext<AppUser, AppRole, string,
+    public class DataContext : IdentityDbContext<AppUser, AppRole, string,
         IdentityUserClaim<string>, AppUserRole, IdentityUserLogin<string>,
         IdentityRoleClaim<string>, IdentityUserToken<string>>
     {
@@ -16,7 +16,7 @@ namespace CalorieTracker.Data
         public virtual DbSet<Meal> Meals { get; set; }
         public virtual DbSet<MealFood> MealFoods { get; set; }
         
-        public DbContext(DbContextOptions<DbContext> options,
+        public DataContext(DbContextOptions<DataContext> options,
             IConfiguration configuration) : base(options)
         {
             _configuration = configuration;

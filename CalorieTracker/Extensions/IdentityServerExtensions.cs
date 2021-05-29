@@ -20,7 +20,7 @@ namespace CalorieTracker.Extensions
                 })
                 .AddPasswordValidator<CustomPasswordValidator>()
                 .AddUserValidator<CustomUserValidator>()
-                .AddEntityFrameworkStores<DbContext>();
+                .AddEntityFrameworkStores<DataContext>();
         }
     }
 }

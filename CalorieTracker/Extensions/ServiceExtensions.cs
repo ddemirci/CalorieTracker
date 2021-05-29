@@ -10,6 +10,7 @@ namespace CalorieTracker.Extensions
         public static void AddServices(this IServiceCollection services)
         {
             services.TryAddScoped<ITokenAuthenticationService, TokenAuthenticationService>();
+            services.TryAddScoped<IAccountService, AccountService>();
         }
     }
 }
